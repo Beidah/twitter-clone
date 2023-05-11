@@ -18,11 +18,11 @@ export function SideNav() {
         )}
         {user == null ? (
           <li>
-            <button onClick={() => signIn()}>Log In</button>
+            <button onClick={() => void signIn()}>Log In</button>
           </li>
         ) : (
           <li>
-            <button onClick={() => signOut()}>Log Out</button>
+            <button onClick={() => void signOut()}>Log Out</button>
           </li>
         )}
       </ul>
