@@ -79,6 +79,8 @@ function TweetCard({ id, user, content, createdAt, likeCount, likedByMe }: Tweet
           };
         };
       trpcContext.tweet.infiniteFeed.setInfiniteData({}, updateData);
+      trpcContext.tweet.infiniteFeed.setInfiniteData({ onlyFollowing: true }, updateData);
+      trpcContext.tweet.infiniteProfileFeed.setInfiniteData({ userId: user.id }, updateData);
     }
   });
 
