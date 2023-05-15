@@ -17,6 +17,21 @@ const ProfilePage: NextPage<InferGetServerSidePropsType<typeof getStaticProps>> 
     { userId: id },
     { getNextPageParam: (lastPage) => lastPage.nextCursor }
   );
+  const trpcUtils = api.useContext();
+  const toggleFollow = api.profile.toggleFollow.useMutation({
+    onSuccess: ({ addedFollower }) => {
+      trpcUtils.profile.getById.setData({ id }, oldData => {
+        if (oldData == null) return;
+
+        const countModifier = addedFollower ? 1 : -1;
+        return {
+          ...oldData,
+          isFollowing: addedFollower,
+          followersCount: oldData.followersCount + countModifier
+        };
+      });
+    }
+  });
 
   if (profile == null || profile.name == null) {
     return <ErrorPage statusCode={ 404 } />;
@@ -44,7 +59,12 @@ const ProfilePage: NextPage<InferGetServerSidePropsType<typeof getStaticProps>> 
             { profile.followersCount } Following
           </div>
         </div>
-        <FollowButton isFollowing={ profile.isFollowing } userId={ id } onClick={ () => null } />
+        <FollowButton
+          isFollowing={ profile.isFollowing }
+          userId={ id }
+          isLoading={ toggleFollow.isLoading }
+          onClick={ () => toggleFollow.mutate({ userId: id }) }
+        />
       </header>
       <main>
         <InfiniteTweetList
@@ -59,9 +79,10 @@ const ProfilePage: NextPage<InferGetServerSidePropsType<typeof getStaticProps>> 
   );
 };
 
-function FollowButton({ userId, isFollowing, onClick }: {
+function FollowButton({ userId, isFollowing, isLoading, onClick }: {
   userId: string;
   isFollowing: boolean;
+  isLoading: boolean;
   onClick: () => void;
 }) {
   const session = useSession();
@@ -70,7 +91,7 @@ function FollowButton({ userId, isFollowing, onClick }: {
     return null;
   }
 
-  return <Button onClick={ onClick } small gray={ isFollowing }>
+  return <Button disabled={ isLoading } onClick={ onClick } small gray={ isFollowing }>
     { isFollowing ? "Unfollow" : "Follow" }
   </Button>;
 }
