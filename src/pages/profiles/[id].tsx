@@ -8,6 +8,8 @@ import IconHoverEffect from "~/components/IconHoverEffect";
 import { VscArrowLeft } from "react-icons/vsc";
 import ProfileImage from "~/components/ProfileImage";
 import InfiniteTweetList from "~/components/InfiniteTweetList";
+import { useSession } from "next-auth/react";
+import Button from "~/components/Button";
 
 const ProfilePage: NextPage<InferGetServerSidePropsType<typeof getStaticProps>> = ({ id }) => {
   const { data: profile } = api.profile.getById.useQuery({ id });
@@ -57,8 +59,20 @@ const ProfilePage: NextPage<InferGetServerSidePropsType<typeof getStaticProps>> 
   );
 };
 
-function FollowButton(props: any) {
-  return <h1>Follow</h1>;
+function FollowButton({ userId, isFollowing, onClick }: {
+  userId: string;
+  isFollowing: boolean;
+  onClick: () => void;
+}) {
+  const session = useSession();
+
+  if (session.status !== "authenticated" || session.data.user.id === userId) {
+    return null;
+  }
+
+  return <Button onClick={ onClick } small gray={ isFollowing }>
+    { isFollowing ? "Unfollow" : "Follow" }
+  </Button>;
 }
 
 const pluralRules = new Intl.PluralRules();
